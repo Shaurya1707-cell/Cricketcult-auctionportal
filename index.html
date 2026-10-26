@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CricketCult Auction — Premier Cricket League Live Auction Portal</title>
+  <meta name="description" content="A live-style premier cricket auction portal with real-time bidding paddles, team purse management, player catalogues, and an admin control room.">
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Modular Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/auction.css">
+  <link rel="stylesheet" href="css/teams.css">
+  <link rel="stylesheet" href="css/players.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- Topbar & Branding -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-logo">🏏</div>
+        <div class="brand-title">
+          <h1>CRICKETCULT AUCTION</h1>
+          <p>PREMIER CRICKET LEAGUE · LIVE TEAM BUILDER</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-indicator">
+          <span id="headerStatusDot" class="pulse-dot"></span>
+          <span id="headerStatusText">AUCTION ROOM READY</span>
+        </div>
+
+        <button id="soundToggleBtn" class="sound-toggle-btn active" title="Toggle Sound FX">
+          🔊 Sound: ON
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Main Navigation">
+      <button class="tab-btn active" data-view-target="auction">
+        <span>🔴 Live Auction</span>
+      </button>
+      <button class="tab-btn" data-view-target="teams">
+        <span>🛡️ Teams & Squads</span>
+        <span class="tab-badge" id="teamCountBadge">4 TEAMS</span>
+      </button>
+      <button class="tab-btn" data-view-target="players">
+        <span>📋 Player Pool</span>
+        <span class="tab-badge" id="playerPoolBadge">16 PLAYERS</span>
+      </button>
+      <button class="tab-btn" data-view-target="captain">
+        <span>⚡ Captain's Room</span>
+      </button>
+      <button class="tab-btn" data-view-target="admin">
+        <span>🔒 Admin Console</span>
+      </button>
+    </nav>
+
+    <!-- ==================== VIEW 1: LIVE AUCTION ==================== -->
+    <section id="auctionView" class="view-section active">
+      <!-- Hero Banner & Key Metrics -->
+      <div class="hero-banner">
+        <div class="hero-main-card">
+          <span class="eyebrow-tag">Build Your Championship XI</span>
+          <h2 class="hero-headline">The Room Is Open.<br>Every Bid Counts.</h2>
+          <p class="hero-description">
+            Experience real-time cricket bidding with live team purses, tactical countdown timers, marquee player podiums, and official hammer confirmations.
+          </p>
+          <div class="hero-quick-actions">
+            <button class="btn btn-primary" onclick="window.AuctionApp.navigateTo('captain')">
+              Enter Captain's Room ⚡
+            </button>
+            <button class="btn btn-secondary" onclick="window.AuctionApp.navigateTo('teams')">
+              View Franchise Purses
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-metrics-card">
+          <div class="metric-box">
+            <span class="metric-title">Available in Pool</span>
+            <span class="metric-value" id="statAvailable">0</span>
+          </div>
+          <div class="metric-split">
+            <div class="metric-box">
+              <span class="metric-title">Franchises</span>
+              <span class="metric-value" id="statTeams">0</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-title">Hammered Sold</span>
+              <span class="metric-value" id="statSold" style="color: var(--accent-lime);">0</span>
+            </div>
+          </div>
+          <div class="metric-box">
+            <span class="metric-title">Total League Purse</span>
+            <span class="metric-value" id="statCredits" style="color: var(--accent-cyan); font-size: 24px;">₹0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Auction Podium & Activity Layout -->
+      <div class="auction-grid">
+        <!-- Left: Live Podium & Paddles -->
+        <div>
+          <div id="livePlayerPodium">
+            <!-- Rendered by js/auction.js -->
+          </div>
+
+          <!-- Bidding Increment Selector & Team Paddles -->
+          <div class="bidding-controls-box">
+            <div class="bidding-controls-header">
+              <div>
+                <span class="eyebrow-tag">Live Paddle Bidding</span>
+                <h4 style="font-size: 15px; margin-top: 2px;">Place Franchise Bid</h4>
+              </div>
+              <span style="font-size: 12px; color: var(--text-muted);">Select Increment:</span>
+            </div>
+
+            <div class="increment-btns-row">
+              <button class="increment-chip" data-inc="100">+₹100</button>
+              <button class="increment-chip active" data-inc="500">+₹500</button>
+              <button class="increment-chip" data-inc="1000">+₹1,000</button>
+              <button class="increment-chip" data-inc="5000">+₹5,000</button>
+            </div>
+
+            <div id="biddingPaddlesGrid" class="paddles-grid">
+              <!-- Rendered by js/auction.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Leaderboard & Activity Log -->
+        <aside>
+          <!-- Leaderboard -->
+          <div class="card-panel" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>💰 Purse Leaderboard</h3>
+              </div>
+              <span class="badge badge-lime">LIVE</span>
+            </div>
+            <div id="purseLeaderboard">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Activity Log -->
+          <div class="card-panel">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>📜 Live Auction Ticker</h3>
+              </div>
+              <span style="font-size: 11px; color: var(--text-muted);">Real-time</span>
+            </div>
+            <div id="liveActivityFeed" class="activity-list">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: TEAMS & SQUADS ==================== -->
+    <section id="teamsView" class="view-section">
+      <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+        <div>
+          <span class="eyebrow-tag">Franchise Directory</span>
+          <h2 style="font-size: 26px; font-weight: 800;">Franchises & Squad Rosters</h2>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-primary btn-sm" onclick="window.AuctionTeams.exportAllTeamsCSV()">
+            📊 Export All Teams & Purchases (CSV)
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="window.AuctionTeams.exportSoldPlayersCSV()">
+            📋 Export Sold Register (CSV)
+          </button>
+        </div>
+      </div>
+
+      <div id="franchisesGrid" class="teams-grid">
+        <!-- Rendered by js/teams.js -->
+      </div>
+
+      <!-- Confirmed Sold Register -->
+      <div class="card-panel" style="margin-top: 32px;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <div class="card-title-group">
+            <h3>📋 Official Sold Register</h3>
+            <p class="card-subtitle">Confirmed purchases under the hammer</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="window.AuctionTeams.exportSoldPlayersCSV()">
+            📥 Download Register (CSV)
+          </button>
+        </div>
+        <div id="soldPlayersRegister">
+          <!-- Rendered by js/teams.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: PLAYER POOL ==================== -->
+    <section id="playersView" class="view-section">
+      <div class="card-header">
+        <div>
+          <span class="eyebrow-tag">Auction Catalogue</span>
+          <h2 style="font-size: 26px; font-weight: 800;">Player Pool & Scouting</h2>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="player-catalog-toolbar">
+          <div class="search-input-group">
+            <span class="search-icon-inside">🔍</span>
+            <input 
+              type="text" 
+              id="playerCatalogSearch" 
+              class="form-input" 
+              placeholder="Search by cricketer name, nation, or bowling style..."
+            >
+          </div>
+
+          <div class="filter-pills-row">
+            <button class="filter-pill active" data-player-filter="all">All</button>
+            <button class="filter-pill" data-player-filter="Batter">🏏 Batters</button>
+            <button class="filter-pill" data-player-filter="Bowler">🎯 Bowlers</button>
+            <button class="filter-pill" data-player-filter="All-rounder">⚡ All-rounders</button>
+            <button class="filter-pill" data-player-filter="Wicketkeeper">🧤 Keepers</button>
+            <button class="filter-pill" data-player-filter="available">Available</button>
+            <button class="filter-pill" data-player-filter="sold">Sold</button>
+          </div>
+
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-sm active" data-view-mode="grid">🔲 Cards</button>
+            <button class="btn btn-secondary btn-sm" data-view-mode="table">📋 Table</button>
+          </div>
+        </div>
+
+        <div id="playerCatalogContainer">
+          <!-- Rendered by js/players.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: CAPTAIN'S ROOM ==================== -->
+    <section id="captainView" class="view-section">
+      <div id="captainPortalContent">
+        <!-- Rendered by js/captain.js -->
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: ADMIN CONSOLE ==================== -->
+    <section id="adminView" class="view-section">
+      <!-- PIN Locked State -->
+      <div id="adminLockScreen" class="admin-lock-screen">
+        <div class="admin-lock-card">
+          <div class="admin-lock-icon">🔒</div>
+          <h3 style="font-size: 22px; margin-bottom: 6px;">Auctioneer Control Room</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 24px;">
+            Enter the admin security PIN to orchestrate live player auctions, manage purses, and register teams.
+          </p>
+
+          <div class="form-group">
+            <input 
+              type="password" 
+              id="adminPinInput" 
+              class="form-input" 
+              placeholder="Enter Security PIN" 
+              style="text-align: center; font-size: 18px; letter-spacing: 0.25em;" 
+              maxlength="10"
+              onkeydown="if(event.key==='Enter') window.AuctionAdmin.unlock()"
+            >
+          </div>
+
+          <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="window.AuctionAdmin.unlock()">
+            Unlock Control Room ⚡
+          </button>
+        </div>
+      </div>
+
+      <!-- Unlocked Admin Dashboard -->
+      <div id="adminDashboard" style="display: none;">
+        <div class="card-header">
+          <div>
+            <span class="eyebrow-tag">Auction Master Console</span>
+            <h2 style="font-size: 26px; font-weight: 800;">Live Control & Orchestration</h2>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="window.AuctionAdmin.lock()">
+            🔒 Lock Console
+          </button>
+        </div>
+
+        <div class="quick-stats-row">
+          <div class="quick-stat-box">
+            <div class="quick-stat-label">Available In Pool</div>
+            <div class="quick-stat-number" id="adminStatAvailable">0</div>
+          </div>
+          <div class="quick-stat-box">
+            <div class="quick-stat-label">Players Hammered Sold</div>
+            <div class="quick-stat-number" id="adminStatSold" style="color: var(--accent-lime);">0</div>
+          </div>
+          <div class="quick-stat-box">
+            <div class="quick-stat-label">Franchise Count</div>
+            <div class="quick-stat-number" id="adminStatTeams">0</div>
+          </div>
+          <div class="quick-stat-box">
+            <div class="quick-stat-label">Remaining League Purse</div>
+            <div class="quick-stat-number" id="adminStatRemainingPurse" style="color: var(--accent-cyan);">₹0</div>
+          </div>
+        </div>
+
+        <div class="admin-dashboard-grid">
+          <!-- Left Column: Forms for Adding Team & Player & Purse Adjustment -->
+          <div>
+            <!-- Add Player Form -->
+            <div class="card-panel" style="margin-bottom: 24px;">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3>＋ Introduce New Cricketer</h3>
+                  <p class="card-subtitle">Add a player into the live auction pool</p>
+                </div>
+                <span class="badge badge-lime">PLAYER POOL</span>
+              </div>
+
+              <form id="adminPlayerForm">
+                <div class="form-group">
+                  <label class="form-label">Player Full Name</label>
+                  <input type="text" id="newPlayerName" class="form-input" required placeholder="e.g. Jasprit Bumrah">
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Playing Discipline</label>
+                    <select id="newPlayerRole" class="form-select">
+                      <option value="Batter">Batter</option>
+                      <option value="Bowler">Bowler</option>
+                      <option value="All-rounder">All-rounder</option>
+                      <option value="Wicketkeeper">Wicketkeeper</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Country / Origin</label>
+                    <input type="text" id="newPlayerNation" class="form-input" value="India">
+                  </div>
+                </div>
+
+                <div class="grid-3">
+                  <div class="form-group">
+                    <label class="form-label">Base Price (₹)</label>
+                    <input type="number" id="newPlayerBase" class="form-input" value="3000" min="500" step="500" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Player Rating</label>
+                    <select id="newPlayerRating" class="form-select">
+                      <option>⭐⭐⭐⭐⭐</option>
+                      <option selected>⭐⭐⭐⭐</option>
+                      <option>⭐⭐⭐</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Category Badge</label>
+                    <input type="text" id="newPlayerBadge" class="form-input" value="Core" placeholder="e.g. Marquee, Core">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 6px;">
+                  Add Cricketer To Pool
+                </button>
+              </form>
+
+              <!-- Optional Bulk Import Toggle -->
+              <details style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <summary style="font-size: 13px; font-weight: 700; color: var(--accent-cyan); cursor: pointer; user-select: none;">
+                  ⚡ Quick Bulk Add Multiple Players (Paste CSV / Lines)
+                </summary>
+                <div style="margin-top: 12px;">
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                    Format per line: <code>Name, Role, BasePrice, Country</code> (e.g. <code>Rohit Sharma, Batter, 5000, India</code>)
+                  </p>
+                  <textarea 
+                    id="bulkPlayersInput" 
+                    class="form-textarea" 
+                    rows="4" 
+                    placeholder="Virat Kohli, Batter, 5000&#10;Jasprit Bumrah, Bowler, 5000&#10;Hardik Pandya, All-rounder, 4500&#10;KL Rahul, Wicketkeeper, 4000"
+                  ></textarea>
+                  <button type="button" id="btnBulkImportPlayers" class="btn btn-secondary btn-sm" style="margin-top: 10px;">
+                    ⚡ Import All Listed Players
+                  </button>
+                </div>
+              </details>
+            </div>
+
+            <!-- Add Team Form -->
+            <div class="card-panel" style="margin-bottom: 24px;">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3>＋ Register New Franchise</h3>
+                  <p class="card-subtitle">Add a competing team and allocate purse</p>
+                </div>
+                <span class="badge badge-cyan">FRANCHISE</span>
+              </div>
+
+              <form id="adminTeamForm">
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Franchise Name</label>
+                    <input type="text" id="newTeamName" class="form-input" required placeholder="e.g. Kolkata Knights">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Short Code (3 letters)</label>
+                    <input type="text" id="newTeamShort" class="form-input" maxlength="4" placeholder="e.g. KKR">
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Captain Name</label>
+                    <input type="text" id="newCaptainName" class="form-input" required placeholder="e.g. Shreyas Iyer">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Team Crest / Emoji</label>
+                    <input type="text" id="newTeamIcon" class="form-input" value="⚔️">
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Captain Login ID / Username</label>
+                    <input type="text" id="newCaptainId" class="form-input" placeholder="e.g. captain_kkr">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Captain Password</label>
+                    <input type="password" id="newCaptainPassword" class="form-input" placeholder="Create confidential password">
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Starting Purse (₹)</label>
+                    <input type="number" id="newTeamPurse" class="form-input" value="100000" min="5000" step="5000" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Squad Max Size</label>
+                    <input type="number" id="newSquadLimit" class="form-input" value="15" min="5" max="30" required>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 6px;">
+                  Register Franchise
+                </button>
+              </form>
+
+              <!-- Optional Bulk Import Teams Toggle -->
+              <details style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <summary style="font-size: 13px; font-weight: 700; color: var(--accent-cyan); cursor: pointer; user-select: none;">
+                  ⚡ Quick Bulk Add Multiple Franchises (Paste CSV / Lines)
+                </summary>
+                <div style="margin-top: 12px;">
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                    Format per line: <code>Team Name, ShortCode, Captain Name, CaptainID, Password, StartingPurse</code>
+                  </p>
+                  <textarea 
+                    id="bulkTeamsInput" 
+                    class="form-textarea" 
+                    rows="4" 
+                    placeholder="Mumbai Mavericks, MM, Rohit Sharma, captain_mm, mm@123, 100000&#10;Kolkata Knights, KKR, Shreyas Iyer, captain_kkr, kkr@123, 100000&#10;Delhi Daredevils, DD, Rishabh Pant, captain_dd, dd@123, 100000"
+                  ></textarea>
+                  <button type="button" id="btnBulkImportTeams" class="btn btn-secondary btn-sm" style="margin-top: 10px;">
+                    ⚡ Import All Listed Franchises
+                  </button>
+                </div>
+              </details>
+            </div>
+
+            <!-- Credit Allocation Form -->
+            <div class="card-panel">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3>💰 Purse Top-Up / Adjustment</h3>
+                  <p class="card-subtitle">Inject credits or grant trade allowances</p>
+                </div>
+                <span class="badge badge-gold">VIRTUAL CREDITS</span>
+              </div>
+
+              <form id="adminCreditForm">
+                <div class="form-group">
+                  <label class="form-label">Target Franchise</label>
+                  <select id="creditTargetTeam" class="form-select" required></select>
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Purse Adjustment (₹)</label>
+                    <input type="number" id="creditAmountInput" class="form-input" required placeholder="e.g. 10000">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Memo / Reason</label>
+                    <input type="text" id="creditReasonInput" class="form-input" placeholder="e.g. Retention adjustment">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-gold" style="margin-top: 6px;">
+                  Update Purse Balance
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right Column: Live Orchestrator Controls & Database Operations -->
+          <div>
+            <div class="card-panel" style="margin-bottom: 24px; border-color: rgba(244, 63, 94, 0.4);">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3>🎯 Auctioneer Gavel Controls</h3>
+                  <p class="card-subtitle">Manage live player status on the podium</p>
+                </div>
+                <span class="badge badge-rose">PODIUM CONTROL</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Select Next Available Player</label>
+                <select id="adminNextPlayerSelect" class="form-select"></select>
+              </div>
+
+              <button 
+                class="btn btn-primary" 
+                style="width: 100%; margin-bottom: 12px;" 
+                onclick="window.AuctionAdmin.startAuctionForPlayer(document.getElementById('adminNextPlayerSelect').value)"
+              >
+                Put Player Under The Hammer 🔔
+              </button>
+
+              <div class="grid-2" style="margin-bottom: 16px;">
+                <button class="btn btn-secondary" onclick="window.AuctionAdmin.pauseAuction()">
+                  ⏸ Pause Bids
+                </button>
+                <button class="btn btn-secondary" onclick="window.AuctionAdmin.resumeAuction()">
+                  ▶ Resume Bids
+                </button>
+              </div>
+
+              <div style="height: 1px; background: var(--border-color); margin: 18px 0;"></div>
+
+              <div class="admin-control-cluster">
+                <button class="btn btn-primary btn-lg" style="width: 100%; font-size: 16px;" onclick="window.AuctionAdmin.sellCurrentPlayer()">
+                  🔨 Hammer Down: SOLD!
+                </button>
+                <button class="btn btn-gold" style="width: 100%;" onclick="window.AuctionAdmin.markPlayerUnsold()">
+                  ⚠️ Mark Player Unsold
+                </button>
+                <button class="btn btn-danger" style="width: 100%;" onclick="window.AuctionAdmin.cancelCurrentAuction()">
+                  ✕ Cancel Active Auction
+                </button>
+              </div>
+            </div>
+
+            <!-- Database & Backup Management -->
+            <div class="card-panel">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3>💾 State Backup & Reset</h3>
+                  <p class="card-subtitle">Export or restore full auction state</p>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn btn-primary" style="width: 100%;" onclick="window.AuctionTeams.exportAllTeamsCSV()">
+                  📊 Download Complete Auction Results (CSV)
+                </button>
+
+                <button id="btnExportBackup" class="btn btn-secondary" style="width: 100%;">
+                  📥 Export Database to JSON
+                </button>
+
+                <label class="btn btn-secondary" style="width: 100%; cursor: pointer;">
+                  📤 Import Database from JSON
+                  <input type="file" id="importBackupInput" accept=".json" style="display: none;">
+                </label>
+
+                <button id="btnClearAllPlayers" class="btn btn-danger" style="width: 100%; background: rgba(244, 63, 94, 0.2); border-color: rgba(244, 63, 94, 0.5);">
+                  🗑️ Clear All Players (Wipe Player Pool)
+                </button>
+
+                <button id="btnClearAllTeams" class="btn btn-danger" style="width: 100%; background: rgba(244, 63, 94, 0.2); border-color: rgba(244, 63, 94, 0.5);">
+                  🗑️ Clear All Franchises (Wipe Team Names)
+                </button>
+
+                <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+
+                <button id="btnResetDemoData" class="btn btn-secondary" style="width: 100%;">
+                  🔄 Reset To Clean Defaults
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      <div>
+        <b>CricketCult Auction Portal</b> · Built for live cricket franchise leagues
+      </div>
+      <div class="footer-credits">
+        <span class="footer-badge">Virtual League Credits</span>
+        <span class="footer-badge">Web Audio FX</span>
+        <span class="footer-badge">v2.0 Modular</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modular Scripts Loaded Sequentially for Maximum Browser Compatibility -->
+  <script src="data/seed.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/confetti.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auction.js"></script>
+  <script src="js/teams.js"></script>
+  <script src="js/players.js"></script>
+  <script src="js/captain.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

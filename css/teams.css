@@ -1,0 +1,152 @@
+/* Teams and Franchise Styles */
+
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 22px;
+  margin-top: 20px;
+}
+
+.team-franchise-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.team-franchise-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(90, 130, 200, 0.5);
+  box-shadow: var(--shadow-lg);
+}
+
+.team-card-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.team-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.team-badge-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.team-info-text h3 {
+  font-size: 19px;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.team-captain-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Purse Metrics */
+.team-purse-box {
+  background: rgba(10, 16, 32, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin: 18px 0;
+}
+
+.team-purse-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+
+.team-purse-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.team-purse-value {
+  font-size: 24px;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  color: var(--accent-lime);
+}
+
+.team-squad-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 10px;
+}
+
+/* Squad Roster inside Team Card */
+.team-squad-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.team-squad-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(14, 22, 41, 0.5);
+  border: 1px solid rgba(64, 88, 133, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.team-player-name {
+  font-weight: 600;
+}
+
+.team-player-price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-lime);
+}
+
+/* Captain Dashboard Tab */
+.captain-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.captain-stats-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+}
+
+@media (max-width: 768px) {
+  .captain-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
