@@ -77,23 +77,39 @@ Cricketcult-auctionportal/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started (Multi-Device Live Sync)
 
-No build step or dependencies required!
+### 📱 Option 1: Live Wi-Fi Sync (PC + Phones on Local Network) — **Recommended!**
+Run the built-in zero-dependency sync server:
+```bash
+npm start
+# or: node server.js
+```
+The server will print:
+```
+💻 PC / Auctioneer:    http://localhost:3000
+📱 Phone / Wi-Fi:      http://192.168.x.x:3000
+```
+- Open `http://localhost:3000` on your PC.
+- Open the Wi-Fi link on any phone (or click the **"📱 Sync Devices"** button on the PC to scan the QR Code directly with your phone camera!).
+- Any change made on the PC (introducing players, hammer down, adding franchises) and any bid placed from a phone will reflect across all devices in real-time!
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Shaurya1707-cell/Cricketcult-auctionportal.git
-   ```
-2. Open `index.html` directly in any web browser, or serve with any static server:
-   ```bash
-   # Optional: using Python
-   python -m http.server 8000
-   
-   # Or using npx serve
-   npx serve .
-   ```
-3. Open `http://localhost:8000` (or double-click `index.html`).
+---
+
+### ☁️ Option 2: Cloud Sync (GitHub Pages / Internet)
+If hosting on GitHub Pages, Vercel, or accessing over cellular 4G/5G:
+1. Open the website on your PC.
+2. Click **"📱 Sync Devices"** in the top header.
+3. Click **"📋 Copy Link"** or scan the QR Code with your phone.
+4. Both devices connect to the same Room Code (e.g. `?room=CULT26`) via Cloud Relay with instant real-time synchronization.
+
+---
+
+## 📱 Mobile Phone Features
+- **Native Bottom Navigation Bar**: Swift 1-tap switching between Auction Arena, Teams, Player Pool, Captain's Room, and Admin Console.
+- **Dedicated Floating Captain Paddle**: When a team captain logs in on their phone, a glowing paddle stays pinned at the bottom for instant bidding.
+- **QR Code Auto-Connect**: Scan the PC screen with your phone camera to join the auction room in seconds.
+- **Responsive Player Podium**: Compact high-contrast display with countdown progress, mini-stats, and touch-friendly bid chips.
 
 ---
 

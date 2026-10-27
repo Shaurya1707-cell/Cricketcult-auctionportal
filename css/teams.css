@@ -2,8 +2,8 @@
 
 .teams-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
   margin-top: 20px;
 }
 
@@ -148,5 +148,26 @@
 @media (max-width: 768px) {
   .captain-dashboard-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .captain-stats-card {
+    padding: 18px 14px;
+    border-radius: var(--radius-lg);
+  }
+  .team-franchise-card {
+    padding: 16px 14px;
+    border-radius: var(--radius-lg);
+  }
+  .team-info-text h3 {
+    font-size: 17px;
+  }
+  .team-purse-value {
+    font-size: 20px;
+  }
+  .team-badge-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
   }
 }
+

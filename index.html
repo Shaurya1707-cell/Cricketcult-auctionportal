@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/teams.css">
   <link rel="stylesheet" href="css/players.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/sync.css">
 </head>
 <body>
 
@@ -34,6 +35,12 @@
       </div>
 
       <div class="header-actions">
+        <!-- Multi-Device Sync Room Button -->
+        <button id="syncHeaderBtn" class="sync-header-btn" title="Connect other devices & phones">
+          <span id="syncStatusDot" class="sync-dot connecting"></span>
+          <span id="syncStatusLabel">📱 Sync Devices</span>
+        </button>
+
         <div class="status-indicator">
           <span id="headerStatusDot" class="pulse-dot"></span>
           <span id="headerStatusText">AUCTION ROOM READY</span>
@@ -623,6 +630,8 @@
   <script src="data/seed.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/confetti.js"></script>
+  <script src="js/qrcode.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/state.js"></script>
   <script src="js/auction.js"></script>
   <script src="js/teams.js"></script>

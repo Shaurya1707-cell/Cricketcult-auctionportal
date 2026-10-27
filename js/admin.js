@@ -179,6 +179,9 @@ window.AuctionAdmin = (function () {
     window.AuctionSound.playBid();
     window.AuctionState.save();
     window.AuctionLive.startTimer();
+    if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+      window.AuctionSync.broadcastAction('PODIUM_INTRO', { playerName: p.name, base: p.base }, state);
+    }
     window.AuctionApp.showToast(`${p.name} is now live!`, 'success');
     window.AuctionApp.navigateTo('auction');
   }
@@ -192,6 +195,9 @@ window.AuctionAdmin = (function () {
     window.AuctionLive.stopTimer();
     window.AuctionState.logActivity(`Auction paused by admin for ${window.AuctionState.getPlayer(state.current.playerId).name}`);
     window.AuctionState.save();
+    if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+      window.AuctionSync.broadcastAction('AUCTION_PAUSED', {}, state);
+    }
     window.AuctionApp.showToast('Bidding Paused', 'info');
   }
 
@@ -204,6 +210,9 @@ window.AuctionAdmin = (function () {
     window.AuctionState.logActivity(`Auction resumed for ${window.AuctionState.getPlayer(state.current.playerId).name}`);
     window.AuctionState.save();
     window.AuctionLive.startTimer();
+    if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+      window.AuctionSync.broadcastAction('AUCTION_RESUMED', {}, state);
+    }
     window.AuctionApp.showToast('Bidding Resumed', 'success');
   }
 
@@ -257,6 +266,13 @@ window.AuctionAdmin = (function () {
 
     window.AuctionState.logActivity(`🔨 SOLD! ${player.name} hammered down to ${team.name} for ${window.AuctionState.formatMoney(salePrice)}!`);
     window.AuctionState.save();
+    if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+      window.AuctionSync.broadcastAction('PLAYER_SOLD', {
+        playerName: player.name,
+        teamName: team.name,
+        price: salePrice
+      }, state);
+    }
     window.AuctionApp.showToast(`${player.name} SOLD to ${team.name}!`, 'success');
   }
 
@@ -275,6 +291,9 @@ window.AuctionAdmin = (function () {
 
     window.AuctionState.logActivity(`⚠️ UNSOLD: ${player.name} marked unsold (available in accelerated round)`);
     window.AuctionState.save();
+    if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+      window.AuctionSync.broadcastAction('PLAYER_UNSOLD', { playerName: player.name }, state);
+    }
     window.AuctionApp.showToast(`${player.name} marked UNSOLD`, 'info');
   }
 

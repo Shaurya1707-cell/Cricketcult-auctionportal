@@ -47,12 +47,24 @@ window.AuctionState = (function () {
     return loadedState;
   }
 
-  function save() {
+  function save(skipBroadcast = false) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.error('Failed to save state to localStorage:', e);
     }
+    notifyListeners();
+    if (!skipBroadcast && window.AuctionSync && typeof window.AuctionSync.broadcastState === 'function') {
+      window.AuctionSync.broadcastState(state);
+    }
+  }
+
+  function applyRemoteState(incoming) {
+    if (!incoming || !Array.isArray(incoming.teams)) return;
+    state = incoming;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
     notifyListeners();
   }
 
@@ -195,6 +207,8 @@ window.AuctionState = (function () {
         console.error('Invalid import JSON:', e);
       }
       return false;
-    }
+    },
+
+    applyRemoteState
   };
 })();

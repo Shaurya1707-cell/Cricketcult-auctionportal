@@ -434,11 +434,129 @@
   .hero-banner {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 768px) {
+  .hero-main-card {
+    padding: 20px 16px;
+  }
+  .hero-headline {
+    font-size: 22px;
+    margin: 8px 0 12px;
+  }
+  .hero-description {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .hero-metrics-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  .metric-value {
+    font-size: 22px;
+  }
+  .metric-split {
+    padding: 10px 0;
+    gap: 10px;
+  }
+  
+  .player-podium {
+    padding: 18px 14px;
+    border-radius: var(--radius-lg);
+  }
+  .podium-header {
+    margin-bottom: 14px;
+  }
   .podium-main-info {
-    grid-template-columns: 70px 1fr;
+    grid-template-columns: 60px 1fr;
+    gap: 14px;
+    padding-bottom: 14px;
+  }
+  .podium-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 32px;
+    border-radius: var(--radius-md);
+  }
+  .podium-details h2 {
+    font-size: 20px;
+    margin: 4px 0 2px;
+  }
+  .podium-meta {
+    gap: 8px;
+    font-size: 12px;
   }
   .podium-price-box {
     grid-column: 1 / -1;
     text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+  }
+  .podium-price-amount {
+    font-size: 26px;
+    margin: 0;
+  }
+  
+  .podium-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .podium-stat-pill {
+    padding: 8px 10px;
+  }
+  
+  .hammer-timer-wrap {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .hammer-indicator {
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  
+  .bidding-controls-box {
+    padding: 16px 12px;
+    margin-top: 16px;
+  }
+  .increment-btns-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .increment-chip {
+    padding: 8px 4px;
+    font-size: 12px;
+    text-align: center;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+  }
+  
+  .paddles-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .bid-paddle-btn {
+    padding: 14px;
+    min-height: 52px;
+  }
+  .paddle-team-name {
+    font-size: 14px;
+  }
+  .paddle-bid-amount {
+    font-size: 16px;
+  }
+
+  .activity-list {
+    max-height: 240px;
+    overflow-y: auto;
   }
 }
+

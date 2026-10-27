@@ -46,6 +46,11 @@
   --radius-xl: 28px;
   --radius-full: 9999px;
 
+  /* Mobile & Touch Layout Tokens */
+  --touch-target: 46px;
+  --nav-bottom-height: 66px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
   /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);

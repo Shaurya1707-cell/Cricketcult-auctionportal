@@ -1,0 +1,128 @@
+/* Multi-Device Live Sync Indicator & Modal Styles */
+
+.sync-header-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(14, 22, 41, 0.85);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.sync-header-btn:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.12);
+  transform: translateY(-1px);
+}
+
+.sync-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.sync-dot.online {
+  background: var(--accent-lime);
+  box-shadow: 0 0 10px var(--accent-lime);
+  animation: pulse-ring 2s infinite ease-in-out;
+}
+
+.sync-dot.connecting {
+  background: var(--accent-gold);
+  box-shadow: 0 0 8px var(--accent-gold);
+  animation: pulse-ring 1.2s infinite ease-in-out;
+}
+
+.sync-dot.offline {
+  background: var(--text-muted);
+  box-shadow: none;
+}
+
+/* Sync Modal Specifics */
+.sync-modal-box {
+  max-width: 480px;
+}
+
+#syncQrContainer svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile Quick Floating Bid Paddle */
+.mobile-floating-paddle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sync-header-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .mobile-floating-paddle {
+    display: flex;
+    position: fixed;
+    bottom: calc(var(--nav-bottom-height, 64px) + 12px);
+    left: 12px;
+    right: 12px;
+    z-index: 100;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, rgba(22, 34, 62, 0.96) 0%, rgba(11, 18, 33, 0.98) 100%);
+    border: 2px solid var(--accent-lime);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px var(--accent-lime-glow);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-floating-paddle.hidden {
+    display: none !important;
+  }
+
+  .floating-paddle-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .floating-paddle-team {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent-lime);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .floating-paddle-purse {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .floating-paddle-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

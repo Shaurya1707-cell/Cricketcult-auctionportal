@@ -29,23 +29,33 @@ window.AuctionLive = (function () {
     const state = window.AuctionState.get();
     if (!state.current || state.current.paused) return;
 
-    timerSecondsLeft = COUNTDOWN_TOTAL;
+    if (!state.current.timerEndTime || state.current.timerEndTime < Date.now()) {
+      state.current.timerEndTime = Date.now() + (COUNTDOWN_TOTAL * 1000);
+    }
+
+    timerSecondsLeft = Math.max(0, Math.ceil((state.current.timerEndTime - Date.now()) / 1000));
     updateTimerUI();
 
     timerInterval = setInterval(() => {
-      timerSecondsLeft--;
+      const curState = window.AuctionState.get();
+      if (!curState.current || curState.current.paused) {
+        stopTimer();
+        return;
+      }
+
+      if (curState.current.timerEndTime) {
+        timerSecondsLeft = Math.max(0, Math.ceil((curState.current.timerEndTime - Date.now()) / 1000));
+      } else {
+        timerSecondsLeft--;
+      }
       updateTimerUI();
 
-      if (timerSecondsLeft === 10) {
-        window.AuctionSound.playTick();
-      } else if (timerSecondsLeft === 5) {
-        window.AuctionSound.playTick();
-      } else if (timerSecondsLeft <= 3 && timerSecondsLeft > 0) {
+      if (timerSecondsLeft === 10 || timerSecondsLeft === 5 || (timerSecondsLeft <= 3 && timerSecondsLeft > 0)) {
         window.AuctionSound.playTick();
       } else if (timerSecondsLeft <= 0) {
         stopTimer();
         // If there is a winning bid, auto hammer or prompt admin
-        if (state.current.highestTeamId) {
+        if (curState.current.highestTeamId) {
           window.AuctionSound.playGavel();
         }
       }
@@ -60,7 +70,11 @@ window.AuctionLive = (function () {
   }
 
   function resetTimer() {
+    const state = window.AuctionState.get();
     timerSecondsLeft = COUNTDOWN_TOTAL;
+    if (state.current) {
+      state.current.timerEndTime = Date.now() + (COUNTDOWN_TOTAL * 1000);
+    }
     updateTimerUI();
   }
 
@@ -165,6 +179,14 @@ window.AuctionLive = (function () {
     resetTimer();
     startTimer();
     window.AuctionState.save();
+
+    if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+      window.AuctionSync.broadcastAction('BID_PLACED', {
+        teamName: team.name,
+        playerName: player.name,
+        amount: nextBid
+      }, state);
+    }
   }
 
   function renderHeroStats() {
@@ -376,12 +398,61 @@ window.AuctionLive = (function () {
     }).join('');
   }
 
+  function renderMobileFloatingPaddle() {
+    let paddleEl = document.getElementById('mobileFloatingPaddle');
+    if (!paddleEl) {
+      paddleEl = document.createElement('div');
+      paddleEl.id = 'mobileFloatingPaddle';
+      paddleEl.className = 'mobile-floating-paddle hidden';
+      document.body.appendChild(paddleEl);
+    }
+
+    const state = window.AuctionState.get();
+    const loggedCaptain = window.AuctionState.getLoggedInCaptain();
+
+    if (!loggedCaptain || !state.current || state.current.paused) {
+      paddleEl.classList.add('hidden');
+      return;
+    }
+
+    const current = state.current;
+    const isLeader = (current.highestTeamId === loggedCaptain.id);
+    const nextBid = current.bid ? (current.bid + selectedIncrement) : current.base;
+    const remainingPurse = loggedCaptain.budget - loggedCaptain.spent;
+    const check = canTeamBid(loggedCaptain, current, nextBid);
+
+    paddleEl.classList.remove('hidden');
+    paddleEl.innerHTML = `
+      <div class="floating-paddle-info">
+        <span class="floating-paddle-team">👑 ${window.AuctionState.escapeHTML(loggedCaptain.name)}</span>
+        <span class="floating-paddle-purse">Purse: ${window.AuctionState.formatMoney(remainingPurse)}</span>
+      </div>
+      <div class="floating-paddle-action">
+        ${isLeader ? `
+          <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.9; color: var(--accent-cyan); border-color: var(--accent-cyan);">
+            ★ HIGHEST BIDDER
+          </button>
+        ` : `
+          <button 
+            class="btn btn-primary btn-sm" 
+            ${!check.allowed ? 'disabled' : ''} 
+            onclick="window.AuctionLive.placeBid('${loggedCaptain.id}')"
+            style="font-size: 13px; font-weight: 800; padding: 10px 16px;"
+          >
+            ⚡ BID ${window.AuctionState.formatMoney(nextBid)}
+          </button>
+        `}
+      </div>
+    `;
+  }
+
   function renderAll() {
     renderHeroStats();
     renderPodium();
     renderPaddles();
     renderActivity();
     renderLeaderboard();
+    renderMobileFloatingPaddle();
   }
 
   return {

@@ -108,3 +108,30 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .admin-lock-screen {
+    margin: 20px auto;
+  }
+  .admin-lock-card {
+    padding: 24px 18px;
+    border-radius: var(--radius-lg);
+  }
+  .pin-key {
+    padding: 16px 10px;
+    font-size: 20px;
+    min-height: 52px;
+  }
+  .quick-stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .quick-stat-box {
+    padding: 10px 12px;
+  }
+  .quick-stat-number {
+    font-size: 18px;
+  }
+}
+

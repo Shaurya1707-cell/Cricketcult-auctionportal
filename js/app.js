@@ -15,6 +15,16 @@ window.AuctionApp = (function () {
     window.AuctionPlayers.init();
     window.AuctionCaptain.init();
     window.AuctionAdmin.init();
+    if (window.AuctionSync) window.AuctionSync.init();
+
+    // Mobile touch audio unlock
+    const unlockAudio = () => {
+      if (window.AuctionSound) window.AuctionSound.playTick();
+      window.removeEventListener('touchstart', unlockAudio);
+      window.removeEventListener('click', unlockAudio);
+    };
+    window.addEventListener('touchstart', unlockAudio, { passive: true });
+    window.addEventListener('click', unlockAudio, { once: true });
 
     // Subscribe to state mutations
     window.AuctionState.subscribe((state) => {

@@ -1,0 +1,19 @@
+{
+  "name": "cricketcult-auctionportal",
+  "version": "2.1.0",
+  "description": "Live Cricket Franchise Auction Portal with Multi-Device Real-Time Sync and Mobile Responsiveness",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "cricket",
+    "auction",
+    "ipl",
+    "realtime",
+    "mobile"
+  ],
+  "author": "CricketCult",
+  "license": "MIT"
+}
