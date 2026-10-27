@@ -42,6 +42,9 @@ window.AuctionState = (function () {
         if (!t.password) {
           t.password = (t.shortName || t.name.substring(0, 3)).toLowerCase() + '@123';
         }
+        if (!t.limit || isNaN(t.limit) || t.limit < 1) {
+          t.limit = 15;
+        }
       });
     }
     return loadedState;

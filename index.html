@@ -473,13 +473,13 @@
                 </summary>
                 <div style="margin-top: 12px;">
                   <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
-                    Format per line: <code>Team Name, ShortCode, Captain Name, CaptainID, Password, StartingPurse</code>
+                    Format per line: <code>Team Name, ShortCode, Captain Name, CaptainID, Password, StartingPurse, SquadLimit</code> (SquadLimit optional, default 15)
                   </p>
                   <textarea 
                     id="bulkTeamsInput" 
                     class="form-textarea" 
                     rows="4" 
-                    placeholder="Mumbai Mavericks, MM, Rohit Sharma, captain_mm, mm@123, 100000&#10;Kolkata Knights, KKR, Shreyas Iyer, captain_kkr, kkr@123, 100000&#10;Delhi Daredevils, DD, Rishabh Pant, captain_dd, dd@123, 100000"
+                    placeholder="Mumbai Mavericks, MM, Rohit Sharma, captain_mm, mm@123, 100000, 15&#10;Kolkata Knights, KKR, Shreyas Iyer, captain_kkr, kkr@123, 100000, 15&#10;Delhi Daredevils, DD, Rishabh Pant, captain_dd, dd@123, 100000, 15"
                   ></textarea>
                   <button type="button" id="btnBulkImportTeams" class="btn btn-secondary btn-sm" style="margin-top: 10px;">
                     ⚡ Import All Listed Franchises
@@ -489,7 +489,7 @@
             </div>
 
             <!-- Credit Allocation Form -->
-            <div class="card-panel">
+            <div class="card-panel" style="margin-bottom: 24px;">
               <div class="card-header">
                 <div class="card-title-group">
                   <h3>💰 Purse Top-Up / Adjustment</h3>
@@ -519,6 +519,67 @@
                   Update Purse Balance
                 </button>
               </form>
+            </div>
+
+            <!-- Squad Size & Roster Capacity Management -->
+            <div class="card-panel" style="margin-bottom: 24px;">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3>🛡️ Squad Size & Roster Capacity</h3>
+                  <p class="card-subtitle">Edit and adjust maximum player limits for franchises</p>
+                </div>
+                <span class="badge badge-cyan">SQUAD LIMITS</span>
+              </div>
+
+              <form id="adminSquadSizeForm">
+                <div class="form-group">
+                  <label class="form-label">Target Franchise</label>
+                  <select id="squadSizeTargetTeam" class="form-select" required></select>
+                </div>
+
+                <div id="squadSizeCurrentInfo" class="admin-action-banner" style="margin-bottom: 16px; padding: 12px 14px; font-size: 13px;">
+                  <!-- Dynamically populated info banner -->
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Squad Max Limit (Slots)</label>
+                    <input type="number" id="editSquadLimitInput" class="form-input" min="1" max="50" value="15" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Quick Presets</label>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+                      <button type="button" class="btn btn-secondary btn-sm" style="padding: 6px 10px; font-size: 12px;" onclick="window.AuctionAdmin.setSquadLimitPreset(11)">11 (XI)</button>
+                      <button type="button" class="btn btn-secondary btn-sm" style="padding: 6px 10px; font-size: 12px;" onclick="window.AuctionAdmin.setSquadLimitPreset(15)">15 (Std)</button>
+                      <button type="button" class="btn btn-secondary btn-sm" style="padding: 6px 10px; font-size: 12px;" onclick="window.AuctionAdmin.setSquadLimitPreset(18)">18</button>
+                      <button type="button" class="btn btn-secondary btn-sm" style="padding: 6px 10px; font-size: 12px;" onclick="window.AuctionAdmin.setSquadLimitPreset(20)">20</button>
+                      <button type="button" class="btn btn-secondary btn-sm" style="padding: 6px 10px; font-size: 12px;" onclick="window.AuctionAdmin.setSquadLimitPreset(25)">25</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap;">
+                  <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    Update Squad Limit
+                  </button>
+                  <button type="button" id="btnApplySquadLimitAll" class="btn btn-secondary" style="flex: 1;" onclick="window.AuctionAdmin.applySquadLimitToAll()">
+                    🌐 Apply To All Franchises
+                  </button>
+                </div>
+              </form>
+
+              <!-- Live Roster Limit Overview List -->
+              <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary);">
+                    Franchise Squad Limits Overview
+                  </span>
+                  <span id="adminSquadLimitsSummary" style="font-size: 11px; color: var(--accent-cyan); font-weight: 600;"></span>
+                </div>
+                <div id="adminSquadLimitsList" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Dynamically rendered list of franchises with inline limit controls -->
+                </div>
+              </div>
             </div>
           </div>
 

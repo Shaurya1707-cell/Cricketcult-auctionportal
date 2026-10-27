@@ -42,6 +42,7 @@ CricketCult Auction Portal is a live cricket franchise bidding application desig
 - **Custom Player Entry**: Form to register single players or quick bulk-paste multiple cricketers (`Name, Role, BasePrice, Country`).
 - **Custom Franchise Registration**: Form to create teams with custom budgets, squad limits, Captain IDs, and passwords.
 - **Purse Adjustments**: Inject or adjust franchise credits with memo audit notes.
+- **Squad Size & Capacity Management**: Edit and adjust maximum player limits for individual teams or apply league-wide squad caps across all franchises simultaneously, complete with quick presets (11, 15, 18, 20, 25), inline steppers, and roster safety guards.
 - **Data Management**: Export/Import complete JSON database backups or wipe/clear rosters with single-click purge buttons.
 
 ---

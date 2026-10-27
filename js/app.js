@@ -254,6 +254,7 @@ window.AuctionApp = (function () {
             const captainId = parts[3] || ('captain_' + shortName.toLowerCase());
             const password = parts[4] || (shortName.toLowerCase() + '@123');
             const budget = parseInt(parts[5], 10) || 100000;
+            const limit = parseInt(parts[6], 10) || 15;
 
             if (!state.teams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
               state.teams.push({
@@ -266,7 +267,7 @@ window.AuctionApp = (function () {
                 code: shortName + '24',
                 budget,
                 spent: 0,
-                limit: 15,
+                limit,
                 icon: '🛡️',
                 players: []
               });

@@ -147,6 +147,234 @@ window.AuctionAdmin = (function () {
         window.AuctionApp.showToast(`Updated purse for ${team.name}`, 'success');
       });
     }
+
+    // Squad Size & Roster Capacity Form
+    const squadForm = document.getElementById('adminSquadSizeForm');
+    if (squadForm) {
+      squadForm.addEventListener('submit', handleSquadSizeSubmit);
+    }
+
+    const squadTargetSel = document.getElementById('squadSizeTargetTeam');
+    if (squadTargetSel) {
+      squadTargetSel.addEventListener('change', () => {
+        const teamId = squadTargetSel.value;
+        const input = document.getElementById('editSquadLimitInput');
+        if (teamId && teamId !== 'all') {
+          const team = window.AuctionState.getTeam(teamId);
+          if (team && input) {
+            input.value = team.limit || 15;
+          }
+        }
+        updateSquadInfoBanner();
+      });
+    }
+  }
+
+  // --- Squad Size Management Handlers ---
+
+  function updateSquadInfoBanner() {
+    const banner = document.getElementById('squadSizeCurrentInfo');
+    const squadTargetSel = document.getElementById('squadSizeTargetTeam');
+    if (!banner || !squadTargetSel) return;
+
+    const targetId = squadTargetSel.value;
+    const state = window.AuctionState.get();
+
+    if (!state.teams.length) {
+      banner.innerHTML = `<span style="color: var(--text-muted);">No franchises registered yet. Register a franchise above first.</span>`;
+      return;
+    }
+
+    if (targetId === 'all') {
+      const limits = state.teams.map(t => t.limit || 15);
+      const minLim = Math.min(...limits);
+      const maxLim = Math.max(...limits);
+      const rangeText = minLim === maxLim ? `${minLim} slots` : `${minLim} - ${maxLim} slots`;
+      const totalSigned = state.teams.reduce((acc, t) => acc + t.players.length, 0);
+      const totalCap = state.teams.reduce((acc, t) => acc + (t.limit || 15), 0);
+
+      banner.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px; color: var(--accent-cyan); font-weight: 700; margin-bottom: 4px;">
+          <span>🌐</span> League-Wide Mode
+        </div>
+        <div style="color: var(--text-secondary); line-height: 1.4;">
+          Applying changes to all <b>${state.teams.length}</b> franchises simultaneously. Current limits range: <b>${rangeText}</b> (Total signed: <b>${totalSigned}/${totalCap}</b> slots filled).
+        </div>
+      `;
+    } else {
+      const team = window.AuctionState.getTeam(targetId);
+      if (!team) {
+        banner.innerHTML = `<span style="color: var(--text-muted);">Select a franchise to view current squad capacity.</span>`;
+        return;
+      }
+      const currentLimit = team.limit || 15;
+      const signed = team.players.length;
+      const remainingSlots = Math.max(0, currentLimit - signed);
+      const isFull = signed >= currentLimit;
+
+      banner.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+          <span style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <span>${team.icon || '🛡️'}</span> ${window.AuctionState.escapeHTML(team.name)}
+          </span>
+          <span class="badge ${isFull ? 'badge-rose' : 'badge-cyan'}" style="font-size: 11px;">
+            ${signed} / ${currentLimit} SQUAD ${isFull ? '(FULL)' : ''}
+          </span>
+        </div>
+        <div style="color: var(--text-secondary); line-height: 1.4;">
+          Current max squad capacity: <b>${currentLimit} players</b> · Signed: <b>${signed}</b> · Open slots remaining: <b style="color: ${remainingSlots > 0 ? 'var(--accent-lime)' : 'var(--accent-rose)'};">${remainingSlots}</b>.
+        </div>
+      `;
+    }
+  }
+
+  function handleSquadSizeSubmit(e) {
+    e.preventDefault();
+    if (!window.AuctionState.isAdminUnlocked()) return;
+
+    const target = document.getElementById('squadSizeTargetTeam')?.value;
+    const newLimit = parseInt(document.getElementById('editSquadLimitInput')?.value, 10);
+
+    if (isNaN(newLimit) || newLimit < 1) {
+      window.AuctionApp.showToast('Please enter a valid squad limit (minimum 1)', 'error');
+      return;
+    }
+
+    if (newLimit > 50) {
+      window.AuctionApp.showToast('Squad limit cannot exceed 50 players', 'error');
+      return;
+    }
+
+    const state = window.AuctionState.get();
+    if (!state.teams.length) {
+      window.AuctionApp.showToast('No franchises registered yet', 'error');
+      return;
+    }
+
+    if (target === 'all') {
+      applySquadLimitToAll(newLimit);
+    } else {
+      updateSingleTeamSquadLimit(target, newLimit);
+    }
+  }
+
+  function updateSingleTeamSquadLimit(teamId, newLimit) {
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) {
+      window.AuctionApp.showToast('Franchise not found', 'error');
+      return false;
+    }
+
+    if (newLimit < team.players.length) {
+      window.AuctionApp.showToast(
+        `Cannot reduce squad size to ${newLimit}: ${team.name} already has ${team.players.length} signed players!`,
+        'error'
+      );
+      window.AuctionSound.playError();
+      return false;
+    }
+
+    const prev = team.limit || 15;
+    team.limit = newLimit;
+
+    window.AuctionState.logActivity(
+      `Admin updated squad limit for ${team.name}: ${prev} ➔ ${newLimit} slots (${team.players.length} players signed)`
+    );
+    window.AuctionState.save();
+    window.AuctionApp.showToast(`Updated squad limit for ${team.name} to ${newLimit} slots!`, 'success');
+    window.AuctionSound.playBid();
+    return true;
+  }
+
+  function applySquadLimitToAll(customLimit) {
+    if (!window.AuctionState.isAdminUnlocked()) return;
+
+    const newLimit = customLimit !== undefined 
+      ? customLimit 
+      : parseInt(document.getElementById('editSquadLimitInput')?.value, 10);
+
+    if (isNaN(newLimit) || newLimit < 1) {
+      window.AuctionApp.showToast('Please enter a valid squad limit (minimum 1)', 'error');
+      return;
+    }
+
+    if (newLimit > 50) {
+      window.AuctionApp.showToast('Squad limit cannot exceed 50 players', 'error');
+      return;
+    }
+
+    const state = window.AuctionState.get();
+    if (!state.teams.length) {
+      window.AuctionApp.showToast('No franchises registered yet', 'error');
+      return;
+    }
+
+    const conflicting = state.teams.filter(t => t.players.length > newLimit);
+    if (conflicting.length > 0) {
+      const detail = conflicting.map(t => `${t.name} (${t.players.length})`).join(', ');
+      window.AuctionApp.showToast(
+        `Cannot set league limit to ${newLimit}: Some teams have more players signed: ${detail}`,
+        'error'
+      );
+      window.AuctionSound.playError();
+      return;
+    }
+
+    state.teams.forEach(t => {
+      t.limit = newLimit;
+    });
+
+    window.AuctionState.logActivity(
+      `Admin set league-wide squad limit to ${newLimit} slots for all ${state.teams.length} franchises`
+    );
+    window.AuctionState.save();
+    window.AuctionApp.showToast(`Set squad limit to ${newLimit} for all ${state.teams.length} franchises!`, 'success');
+    window.AuctionSound.playBid();
+  }
+
+  function changeTeamSquadLimit(teamId, delta) {
+    if (!window.AuctionState.isAdminUnlocked()) return;
+
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) return;
+
+    const current = team.limit || 15;
+    const target = current + delta;
+
+    if (target < 1) {
+      window.AuctionApp.showToast('Squad limit cannot be less than 1', 'error');
+      return;
+    }
+
+    if (target > 50) {
+      window.AuctionApp.showToast('Squad limit cannot exceed 50', 'error');
+      return;
+    }
+
+    if (target < team.players.length) {
+      window.AuctionApp.showToast(
+        `Cannot reduce squad limit below signed players count (${team.players.length}) for ${team.name}`,
+        'error'
+      );
+      window.AuctionSound.playError();
+      return;
+    }
+
+    team.limit = target;
+    window.AuctionState.logActivity(
+      `Admin adjusted squad limit for ${team.name}: ${current} ➔ ${target} slots`
+    );
+    window.AuctionState.save();
+    window.AuctionApp.showToast(`${team.name} squad limit: ${target} slots`, 'success');
+    window.AuctionSound.playBid();
+  }
+
+  function setSquadLimitPreset(val) {
+    const input = document.getElementById('editSquadLimitInput');
+    if (input) {
+      input.value = val;
+      input.focus();
+    }
   }
 
   // --- Auction Workflow Orchestrator ---
@@ -349,6 +577,94 @@ window.AuctionAdmin = (function () {
         : `<option disabled selected>No franchises registered yet — add a franchise below</option>`;
     }
 
+    // Populate squad size target team dropdown
+    const squadTargetSel = document.getElementById('squadSizeTargetTeam');
+    if (squadTargetSel) {
+      const previousVal = squadTargetSel.value;
+      if (state.teams.length > 0) {
+        squadTargetSel.innerHTML = `
+          <option value="all">🌐 All Franchises (League-Wide Limit)</option>
+          ${state.teams.map(t => `
+            <option value="${t.id}">
+              ${t.icon || '🛡️'} ${window.AuctionState.escapeHTML(t.name)} (${t.players.length}/${t.limit || 15} signed)
+            </option>
+          `).join('')}
+        `;
+        if (previousVal && (previousVal === 'all' || state.teams.some(t => t.id === previousVal))) {
+          squadTargetSel.value = previousVal;
+        }
+      } else {
+        squadTargetSel.innerHTML = `<option disabled selected>No franchises registered yet — add a franchise above</option>`;
+      }
+    }
+
+    // Update squad info banner
+    updateSquadInfoBanner();
+
+    // Render Live Squad Limits Overview List
+    const squadListEl = document.getElementById('adminSquadLimitsList');
+    const squadSummaryEl = document.getElementById('adminSquadLimitsSummary');
+    if (squadListEl) {
+      if (state.teams.length === 0) {
+        squadListEl.innerHTML = `
+          <div class="empty-state" style="padding: 14px; font-size: 12px; color: var(--text-muted);">
+            No franchises registered yet — add a franchise above to configure squad limits.
+          </div>
+        `;
+        if (squadSummaryEl) squadSummaryEl.textContent = '';
+      } else {
+        const totalCap = state.teams.reduce((acc, t) => acc + (t.limit || 15), 0);
+        const totalSigned = state.teams.reduce((acc, t) => acc + t.players.length, 0);
+
+        if (squadSummaryEl) {
+          squadSummaryEl.textContent = `${state.teams.length} Teams · ${totalCap} Slots (${totalSigned} Signed)`;
+        }
+
+        squadListEl.innerHTML = state.teams.map(t => {
+          const currentLimit = t.limit || 15;
+          const signed = t.players.length;
+          const remaining = Math.max(0, currentLimit - signed);
+          const isFull = signed >= currentLimit;
+
+          return `
+            <div class="squad-limit-row">
+              <div class="squad-limit-team-info">
+                <span style="font-size: 20px;">${t.icon || '🛡️'}</span>
+                <div style="min-width: 0;">
+                  <div class="squad-limit-team-name">${window.AuctionState.escapeHTML(t.name)}</div>
+                  <div class="squad-limit-team-meta">
+                    Signed: <b style="color: var(--text-primary);">${signed}</b> · Remaining: <b style="color: ${remaining > 0 ? 'var(--accent-lime)' : 'var(--accent-rose)'};">${remaining}</b>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge ${isFull ? 'badge-rose' : 'badge-cyan'}" style="font-size: 10px;">
+                  ${signed}/${currentLimit} ${isFull ? 'FULL' : 'SLOTS'}
+                </span>
+                <div class="squad-limit-controls">
+                  <button 
+                    type="button" 
+                    class="squad-btn-stepper" 
+                    title="Decrease squad limit by 1"
+                    onclick="window.AuctionAdmin.changeTeamSquadLimit('${t.id}', -1)"
+                    ${currentLimit <= signed || currentLimit <= 1 ? 'disabled' : ''}
+                  >-</button>
+                  <span class="squad-limit-pill">${currentLimit}</span>
+                  <button 
+                    type="button" 
+                    class="squad-btn-stepper" 
+                    title="Increase squad limit by 1"
+                    onclick="window.AuctionAdmin.changeTeamSquadLimit('${t.id}', 1)"
+                    ${currentLimit >= 50 ? 'disabled' : ''}
+                  >+</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
     // Update Quick Stats
     const availCount = state.players.filter(p => p.status === 'available').length;
     const soldCount = state.players.filter(p => p.status === 'sold').length;
@@ -375,6 +691,10 @@ window.AuctionAdmin = (function () {
     sellCurrentPlayer,
     markPlayerUnsold,
     cancelCurrentAuction,
+    setSquadLimitPreset,
+    applySquadLimitToAll,
+    changeTeamSquadLimit,
+    updateSquadSize: updateSingleTeamSquadLimit,
     render
   };
 })();
