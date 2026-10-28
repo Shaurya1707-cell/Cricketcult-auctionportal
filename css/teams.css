@@ -31,6 +31,30 @@
   margin-bottom: 18px;
 }
 
+.btn-delete-franchise {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #fda4af;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.btn-delete-franchise:hover {
+  background: var(--grad-danger);
+  border-color: transparent;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+}
+
 .team-identity {
   display: flex;
   align-items: center;

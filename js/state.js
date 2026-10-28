@@ -135,6 +135,27 @@ window.AuctionState = (function () {
       notifyListeners();
     },
 
+    updateTeamPassword(teamId, newPassword) {
+      const team = state.teams.find(t => t.id === teamId);
+      if (!team) return { success: false, reason: 'Franchise not found' };
+
+      const pass = String(newPassword || '').trim();
+      if (!pass || pass.length < 3) {
+        return { success: false, reason: 'Password must be at least 3 characters long' };
+      }
+
+      team.password = pass;
+
+      this.logActivity(`Captain password updated for franchise: ${team.name}`);
+      save();
+
+      if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+        window.AuctionSync.broadcastAction('PASSWORD_UPDATED', { teamId, teamName: team.name }, state);
+      }
+
+      return { success: true, team };
+    },
+
     getTeam(id) {
       return state.teams.find(t => t.id === id);
     },
@@ -180,10 +201,91 @@ window.AuctionState = (function () {
       this.logActivity('All players cleared from pool. Ready for custom player entry.');
     },
 
+    deleteTeam(teamId) {
+      const teamIndex = state.teams.findIndex(t => t.id === teamId);
+      if (teamIndex === -1) return { success: false, reason: 'Team not found' };
+
+      const team = state.teams[teamIndex];
+
+      // 1. Release all players signed to this franchise back to the available pool
+      let releasedCount = 0;
+      state.players.forEach(p => {
+        if (p.soldTo === teamId) {
+          p.status = 'available';
+          delete p.soldTo;
+          delete p.soldPrice;
+          releasedCount++;
+        }
+      });
+
+      // 2. Remove team from purchase history
+      state.history = state.history.filter(h => h.teamId !== teamId);
+
+      // 3. Handle live auction if currently active and referencing this team
+      if (state.current) {
+        if (state.current.highestTeamId === teamId) {
+          if (Array.isArray(state.current.bids)) {
+            state.current.bids = state.current.bids.filter(b => b.teamId !== teamId);
+            if (state.current.bids.length > 0) {
+              const prevBid = state.current.bids[state.current.bids.length - 1];
+              state.current.highestTeamId = prevBid.teamId;
+              state.current.highestTeamName = prevBid.teamName;
+              state.current.bid = prevBid.amount;
+            } else {
+              state.current.highestTeamId = null;
+              state.current.highestTeamName = null;
+              state.current.bid = state.current.base;
+            }
+          } else {
+            state.current.highestTeamId = null;
+            state.current.highestTeamName = null;
+            state.current.bid = state.current.base;
+          }
+        } else if (Array.isArray(state.current.bids)) {
+          state.current.bids = state.current.bids.filter(b => b.teamId !== teamId);
+        }
+      }
+
+      // 4. Log out if logged in captain is this team
+      if (loggedInCaptainTeamId === teamId) {
+        loggedInCaptainTeamId = null;
+        try { sessionStorage.removeItem('auction_logged_captain_id'); } catch (e) {}
+      }
+
+      // 5. Remove team from array
+      state.teams.splice(teamIndex, 1);
+
+      // 6. Log activity
+      let note = `Franchise deleted: ${team.name}`;
+      if (releasedCount > 0) {
+        note += ` (${releasedCount} player(s) returned to available pool)`;
+      }
+      this.logActivity(note);
+
+      // 7. Save state & broadcast
+      save();
+
+      if (window.AuctionSync && typeof window.AuctionSync.broadcastAction === 'function') {
+        window.AuctionSync.broadcastAction('TEAM_DELETED', { teamId, teamName: team.name, releasedCount }, state);
+      }
+
+      return { success: true, team, releasedCount };
+    },
+
     clearAllTeams() {
+      // Revert any sold players to available pool
+      state.players.forEach(p => {
+        if (p.soldTo) {
+          p.status = 'available';
+          delete p.soldTo;
+          delete p.soldPrice;
+        }
+      });
       state.teams = [];
       state.current = null;
       state.history = [];
+      loggedInCaptainTeamId = null;
+      try { sessionStorage.removeItem('auction_logged_captain_id'); } catch (e) {}
       save();
       this.logActivity('All franchises cleared. Ready for custom team registration.');
     },

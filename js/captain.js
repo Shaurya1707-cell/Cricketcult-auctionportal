@@ -136,9 +136,14 @@ window.AuctionCaptain = (function () {
           </div>
         </div>
 
-        <button id="btnCaptainLogout" class="btn btn-secondary btn-sm">
-          🚪 Logout Captain
-        </button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="btnCaptainChangePassword" class="btn btn-secondary btn-sm" onclick="window.AuctionCaptain.changePassword()">
+            🔑 Change Password
+          </button>
+          <button id="btnCaptainLogout" class="btn btn-secondary btn-sm">
+            🚪 Logout Captain
+          </button>
+        </div>
       </div>
 
       <div class="captain-dashboard-grid">
@@ -259,8 +264,37 @@ window.AuctionCaptain = (function () {
     `;
   }
 
+  function changePassword() {
+    const team = window.AuctionState.getLoggedInCaptain();
+    if (!team) {
+      window.AuctionApp.showToast('You must be logged in as a franchise captain', 'error');
+      return;
+    }
+
+    const currentPass = team.password || '';
+    const newPass = prompt(`Change password for ${team.name} (Current: ${currentPass}):\nEnter new confidential password:`, currentPass);
+    if (newPass !== null) {
+      const trimmed = newPass.trim();
+      if (!trimmed || trimmed.length < 3) {
+        window.AuctionApp.showToast('Password must be at least 3 characters long', 'error');
+        if (window.AuctionSound && window.AuctionSound.playError) window.AuctionSound.playError();
+        return;
+      }
+
+      const res = window.AuctionState.updateTeamPassword(team.id, trimmed);
+      if (res && res.success) {
+        if (window.AuctionSound && window.AuctionSound.playBid) window.AuctionSound.playBid();
+        window.AuctionApp.showToast(`Password successfully updated! Your new password is "${trimmed}"`, 'success');
+        render();
+      } else {
+        window.AuctionApp.showToast(res.reason || 'Failed to update password', 'error');
+      }
+    }
+  }
+
   return {
     init,
+    changePassword,
     render
   };
 })();

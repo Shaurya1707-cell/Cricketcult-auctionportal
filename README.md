@@ -19,6 +19,7 @@ CricketCult Auction Portal is a live cricket franchise bidding application desig
 ### 🛡️ 2. Franchise & Squad Management
 - **Visual Purse Meters**: Live progress bars tracking remaining vs. spent credits.
 - **Roster Inspector**: See all acquired players, roles, and purchase prices.
+- **Individual Franchise Deletion**: Delete single franchises one at a time with automatic roster safety guards that return any signed players on the team back into the available auction pool.
 - **Official Sold Register**: Verified log of all confirmed purchases with base prices and price hike percentages.
 - **CSV Data Exports**:
   - `📊 Export All Teams & Purchases (CSV)`
@@ -32,6 +33,7 @@ CricketCult Auction Portal is a live cricket franchise bidding application desig
 
 ### ⚡ 4. Captain's Room
 - **Confidential Authentication**: Private Franchise Captain ID and Password login.
+- **Self-Service Password Management**: Franchise captains can update their confidential login password directly from their authenticated dashboard.
 - **Max Affordable Bid Advisor**: Automatically calculates the maximum safe bid a captain can make while reserving minimum base purse for remaining unfilled squad slots.
 - **Dedicated Franchise Paddle**: Glowing `👑 YOUR TEAM` badge with single-click bidding for authorized captains.
 - **Squad Export**: Download individual team squad rosters as CSV.
@@ -41,6 +43,8 @@ CricketCult Auction Portal is a live cricket franchise bidding application desig
 - **Podium Orchestration**: Bring any player under the hammer, pause bidding, resume bidding, hammer down as SOLD, or mark UNSOLD.
 - **Custom Player Entry**: Form to register single players or quick bulk-paste multiple cricketers (`Name, Role, BasePrice, Country`).
 - **Custom Franchise Registration**: Form to create teams with custom budgets, squad limits, Captain IDs, and passwords.
+- **Franchise Passwords & Security Management**: Full credential administration suite to update passwords, auto-generate memorable credentials, mask/reveal all passwords, and quick-edit credentials inline.
+- **Single & Bulk Franchise Deletion**: Delete one franchise at a time with confirmation alerts and roster safeguards, or wipe all teams cleanly.
 - **Purse Adjustments**: Inject or adjust franchise credits with memo audit notes.
 - **Squad Size & Capacity Management**: Edit and adjust maximum player limits for individual teams or apply league-wide squad caps across all franchises simultaneously, complete with quick presets (11, 15, 18, 20, 25), inline steppers, and roster safety guards.
 - **Data Management**: Export/Import complete JSON database backups or wipe/clear rosters with single-click purge buttons.

@@ -168,6 +168,218 @@ window.AuctionAdmin = (function () {
         updateSquadInfoBanner();
       });
     }
+
+    // Delete Single Franchise Button in Backup & Reset
+    const btnDeleteSingleTeam = document.getElementById('btnDeleteSingleTeam');
+    if (btnDeleteSingleTeam) {
+      btnDeleteSingleTeam.addEventListener('click', () => {
+        if (!window.AuctionState.isAdminUnlocked()) {
+          window.AuctionApp.showToast('Please unlock Admin Console first', 'error');
+          return;
+        }
+        const sel = document.getElementById('deleteSingleTeamSelect');
+        const teamId = sel ? sel.value : null;
+        if (!teamId) {
+          window.AuctionApp.showToast('Please select a franchise to delete first', 'error');
+          return;
+        }
+        deleteFranchise(teamId);
+      });
+    }
+
+    // Franchise Password Form
+    const passwordForm = document.getElementById('adminPasswordForm');
+    if (passwordForm) {
+      passwordForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!window.AuctionState.isAdminUnlocked()) return;
+
+        const teamId = document.getElementById('passwordTargetTeam')?.value;
+        const newPass = document.getElementById('newPasswordInput')?.value.trim();
+
+        if (!teamId || !newPass) {
+          window.AuctionApp.showToast('Please select a franchise and enter a new password', 'error');
+          return;
+        }
+
+        changeTeamPassword(teamId, newPass);
+        const input = document.getElementById('newPasswordInput');
+        if (input) input.value = '';
+      });
+    }
+
+    const passwordTargetSel = document.getElementById('passwordTargetTeam');
+    if (passwordTargetSel) {
+      passwordTargetSel.addEventListener('change', () => {
+        updatePasswordInfoBanner();
+      });
+    }
+
+    // Auto-generate password button
+    const btnGenPass = document.getElementById('btnGeneratePassword');
+    if (btnGenPass) {
+      btnGenPass.addEventListener('click', () => {
+        const teamId = document.getElementById('passwordTargetTeam')?.value;
+        const team = teamId ? window.AuctionState.getTeam(teamId) : null;
+        const prefix = team ? (team.shortName || team.name.substring(0, 3)).toLowerCase() : 'cc';
+        const num = Math.floor(Math.random() * 900) + 100;
+        const symbols = ['@', '#', '$'];
+        const sym = symbols[Math.floor(Math.random() * symbols.length)];
+        const generated = `${prefix}${sym}${num}`;
+        const input = document.getElementById('newPasswordInput');
+        if (input) {
+          input.value = generated;
+          input.focus();
+        }
+      });
+    }
+
+    // Toggle reveal all passwords button
+    const btnToggleAll = document.getElementById('btnToggleAllPasswords');
+    if (btnToggleAll) {
+      btnToggleAll.addEventListener('click', () => {
+        allPasswordsRevealed = !allPasswordsRevealed;
+        btnToggleAll.textContent = allPasswordsRevealed ? '🙈 Hide Passwords' : '👁️ Reveal All Passwords';
+        renderPasswordList(allPasswordsRevealed);
+      });
+    }
+  }
+
+  let allPasswordsRevealed = false;
+
+  // --- Franchise Password Management Handlers ---
+
+  function updatePasswordInfoBanner() {
+    const banner = document.getElementById('passwordCurrentInfo');
+    const sel = document.getElementById('passwordTargetTeam');
+    if (!banner || !sel) return;
+
+    const teamId = sel.value;
+    const state = window.AuctionState.get();
+
+    if (!state.teams.length) {
+      banner.innerHTML = `<span style="color: var(--text-muted);">No franchises registered yet. Register a franchise above first.</span>`;
+      return;
+    }
+
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) {
+      banner.innerHTML = `<span style="color: var(--text-muted);">Select a franchise to view current credentials.</span>`;
+      return;
+    }
+
+    banner.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+        <span style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+          <span>${team.icon || '🛡️'}</span> ${window.AuctionState.escapeHTML(team.name)}
+        </span>
+        <span class="badge badge-gold" style="font-size: 11px;">
+          Captain: ${window.AuctionState.escapeHTML(team.captain)}
+        </span>
+      </div>
+      <div style="color: var(--text-secondary); line-height: 1.5; font-size: 12px;">
+        Official Login ID: <code style="color: var(--accent-cyan); font-weight: 700;">${window.AuctionState.escapeHTML(team.captainId || team.code)}</code> · 
+        Current Password: <code style="color: var(--accent-gold); font-weight: 700; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">${window.AuctionState.escapeHTML(team.password || 'Not set')}</code>
+      </div>
+    `;
+  }
+
+  function changeTeamPassword(teamId, newPassword) {
+    if (!window.AuctionState.isAdminUnlocked()) {
+      window.AuctionApp.showToast('Please unlock Admin Console first', 'error');
+      return;
+    }
+
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) {
+      window.AuctionApp.showToast('Franchise not found', 'error');
+      return;
+    }
+
+    const pass = String(newPassword || '').trim();
+    if (!pass || pass.length < 3) {
+      window.AuctionApp.showToast('Password must be at least 3 characters long', 'error');
+      window.AuctionSound.playError();
+      return;
+    }
+
+    const res = window.AuctionState.updateTeamPassword(teamId, pass);
+    if (res && res.success) {
+      window.AuctionSound.playBid();
+      window.AuctionApp.showToast(`Updated password for ${team.name}! New password: "${pass}"`, 'success');
+      render();
+    } else {
+      window.AuctionApp.showToast(res.reason || 'Failed to update password', 'error');
+      window.AuctionSound.playError();
+    }
+  }
+
+  function quickEditPassword(teamId) {
+    if (!window.AuctionState.isAdminUnlocked()) {
+      window.AuctionApp.showToast('Please unlock Admin Console first', 'error');
+      return;
+    }
+
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) return;
+
+    const entered = prompt(`Enter new login password for ${team.name} (Captain: ${team.captain}):`, team.password || '');
+    if (entered !== null) {
+      const trimmed = entered.trim();
+      if (!trimmed) {
+        window.AuctionApp.showToast('Password cannot be empty', 'error');
+        return;
+      }
+      changeTeamPassword(teamId, trimmed);
+    }
+  }
+
+  function renderPasswordList(revealed = false) {
+    const listEl = document.getElementById('adminPasswordList');
+    if (!listEl) return;
+    const state = window.AuctionState.get();
+
+    if (!state.teams.length) {
+      listEl.innerHTML = `
+        <div class="empty-state" style="padding: 14px; font-size: 12px; color: var(--text-muted);">
+          No franchises registered yet — add a franchise above to configure credentials.
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = state.teams.map(t => {
+      const passText = revealed ? window.AuctionState.escapeHTML(t.password || 'None') : '••••••••';
+      return `
+        <div class="password-row">
+          <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+            <span style="font-size: 20px;">${t.icon || '🛡️'}</span>
+            <div style="min-width: 0;">
+              <div style="font-weight: 700; font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${window.AuctionState.escapeHTML(t.name)}
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted);">
+                Captain: <b style="color: var(--text-secondary);">${window.AuctionState.escapeHTML(t.captain)}</b> · ID: <code style="color: var(--accent-cyan);">${window.AuctionState.escapeHTML(t.captainId || t.code)}</code>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="password-display-pill" title="Franchise password">
+              ${passText}
+            </div>
+            <button 
+              type="button" 
+              class="btn btn-secondary btn-sm" 
+              onclick="window.AuctionAdmin.quickEditPassword('${t.id}')"
+              title="Change password for ${window.AuctionState.escapeHTML(t.name)}"
+              style="padding: 4px 8px; font-size: 11px;"
+            >
+              ✏️ Change
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   // --- Squad Size Management Handlers ---
@@ -377,6 +589,40 @@ window.AuctionAdmin = (function () {
     }
   }
 
+  function deleteFranchise(teamId) {
+    if (!window.AuctionState.isAdminUnlocked()) {
+      window.AuctionApp.showToast('Admin Console must be unlocked to delete franchises', 'error');
+      return;
+    }
+
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) {
+      window.AuctionApp.showToast('Franchise not found', 'error');
+      return;
+    }
+
+    const playerCount = team.players ? team.players.length : 0;
+    const confirmMsg = playerCount > 0
+      ? `Are you sure you want to delete the franchise "${team.name}"?\n\n⚠️ ${playerCount} signed player(s) on this roster will be returned to the available auction pool.`
+      : `Are you sure you want to delete the franchise "${team.name}"?`;
+
+    if (confirm(confirmMsg)) {
+      const res = window.AuctionState.deleteTeam(teamId);
+      if (res && res.success) {
+        if (window.AuctionSound && window.AuctionSound.playGavel) {
+          window.AuctionSound.playGavel();
+        }
+        window.AuctionApp.showToast(`Franchise "${team.name}" deleted successfully!`, 'success');
+        render();
+        if (typeof window.AuctionTeams !== 'undefined' && typeof window.AuctionTeams.renderAll === 'function') {
+          window.AuctionTeams.renderAll();
+        }
+      } else {
+        window.AuctionApp.showToast('Failed to delete franchise', 'error');
+      }
+    }
+  }
+
   // --- Auction Workflow Orchestrator ---
 
   function startAuctionForPlayer(playerId) {
@@ -577,6 +823,33 @@ window.AuctionAdmin = (function () {
         : `<option disabled selected>No franchises registered yet — add a franchise below</option>`;
     }
 
+    // Populate password target team dropdown
+    const passwordTeamSel = document.getElementById('passwordTargetTeam');
+    if (passwordTeamSel) {
+      const prevPassVal = passwordTeamSel.value;
+      if (state.teams.length > 0) {
+        passwordTeamSel.innerHTML = state.teams.map(t => `
+          <option value="${t.id}">
+            ${t.icon || '🛡️'} ${window.AuctionState.escapeHTML(t.name)} (Captain: ${window.AuctionState.escapeHTML(teamCaptainDisplay(t))})
+          </option>
+        `).join('');
+        if (prevPassVal && state.teams.some(t => t.id === prevPassVal)) {
+          passwordTeamSel.value = prevPassVal;
+        }
+      } else {
+        passwordTeamSel.innerHTML = `<option disabled selected>No franchises registered yet</option>`;
+      }
+    }
+
+    // Helper for team captain display
+    function teamCaptainDisplay(t) {
+      return t.captain ? `${t.captain} · ID: ${t.captainId || t.code}` : (t.captainId || t.code);
+    }
+
+    // Update password info banner and credentials list
+    updatePasswordInfoBanner();
+    renderPasswordList(allPasswordsRevealed);
+
     // Populate squad size target team dropdown
     const squadTargetSel = document.getElementById('squadSizeTargetTeam');
     if (squadTargetSel) {
@@ -600,6 +873,19 @@ window.AuctionAdmin = (function () {
 
     // Update squad info banner
     updateSquadInfoBanner();
+
+    // Populate delete single franchise dropdown
+    const deleteTeamSel = document.getElementById('deleteSingleTeamSelect');
+    if (deleteTeamSel) {
+      if (state.teams.length > 0) {
+        deleteTeamSel.innerHTML = `
+          <option value="" disabled selected>Select a franchise to delete...</option>
+          ${state.teams.map(t => `<option value="${t.id}">${t.icon || '🛡️'} ${window.AuctionState.escapeHTML(t.name)} (${t.players.length} signed)</option>`).join('')}
+        `;
+      } else {
+        deleteTeamSel.innerHTML = `<option value="" disabled selected>No franchises registered</option>`;
+      }
+    }
 
     // Render Live Squad Limits Overview List
     const squadListEl = document.getElementById('adminSquadLimitsList');
@@ -657,6 +943,12 @@ window.AuctionAdmin = (function () {
                     onclick="window.AuctionAdmin.changeTeamSquadLimit('${t.id}', 1)"
                     ${currentLimit >= 50 ? 'disabled' : ''}
                   >+</button>
+                  <button 
+                    type="button" 
+                    class="squad-btn-stepper squad-btn-delete" 
+                    title="Delete franchise ${window.AuctionState.escapeHTML(t.name)}"
+                    onclick="window.AuctionAdmin.deleteFranchise('${t.id}')"
+                  >🗑️</button>
                 </div>
               </div>
             </div>
@@ -695,6 +987,9 @@ window.AuctionAdmin = (function () {
     applySquadLimitToAll,
     changeTeamSquadLimit,
     updateSquadSize: updateSingleTeamSquadLimit,
+    deleteFranchise,
+    changeTeamPassword,
+    quickEditPassword,
     render
   };
 })();

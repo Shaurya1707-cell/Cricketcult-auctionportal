@@ -44,13 +44,31 @@ window.AuctionTeams = (function () {
                 <h3>${window.AuctionState.escapeHTML(team.name)}</h3>
                 <div class="team-captain-label">
                   Captain: <b>${window.AuctionState.escapeHTML(team.captain)}</b>
-                  <span class="badge badge-gold" style="font-size: 10px; margin-left: 6px;">ID: ${window.AuctionState.escapeHTML(team.captainId || team.code)}</span>
+                  <span 
+                    class="badge badge-gold" 
+                    style="font-size: 10px; margin-left: 6px; cursor: pointer;" 
+                    onclick="window.AuctionTeams.changePassword('${team.id}')"
+                    title="Click to change captain password"
+                  >
+                    ID: ${window.AuctionState.escapeHTML(team.captainId || team.code)} 🔑
+                  </span>
                 </div>
               </div>
             </div>
-            <span class="badge ${team.players.length >= team.limit ? 'badge-rose' : 'badge-cyan'}">
-              ${team.players.length} / ${team.limit} SQUAD
-            </span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge ${team.players.length >= team.limit ? 'badge-rose' : 'badge-cyan'}">
+                ${team.players.length} / ${team.limit} SQUAD
+              </span>
+              <button 
+                type="button" 
+                class="btn-delete-franchise" 
+                onclick="window.AuctionTeams.deleteFranchise('${team.id}')"
+                title="Delete franchise ${window.AuctionState.escapeHTML(team.name)}"
+                aria-label="Delete franchise"
+              >
+                🗑️
+              </button>
+            </div>
           </div>
 
           <div class="team-purse-box">
@@ -72,13 +90,22 @@ window.AuctionTeams = (function () {
               <span class="eyebrow-tag">Acquired Roster</span>
               <span style="font-size: 11px; color: var(--text-muted); margin-left: 6px;">${team.players.length} Players</span>
             </div>
-            <button 
-              class="btn btn-secondary btn-sm" 
-              onclick="window.AuctionTeams.exportSingleTeamCSV('${team.id}')"
-              title="Download this team's squad roster as CSV"
-            >
-              📥 Team CSV
-            </button>
+            <div style="display: flex; gap: 6px;">
+              <button 
+                class="btn btn-secondary btn-sm" 
+                onclick="window.AuctionTeams.exportSingleTeamCSV('${team.id}')"
+                title="Download this team's squad roster as CSV"
+              >
+                📥 Team CSV
+              </button>
+              <button 
+                class="btn btn-danger btn-sm" 
+                onclick="window.AuctionTeams.deleteFranchise('${team.id}')"
+                title="Delete this franchise"
+              >
+                🗑️ Delete
+              </button>
+            </div>
           </div>
 
           <div class="team-squad-list">
@@ -363,8 +390,59 @@ window.AuctionTeams = (function () {
     triggerDownload(filename, rows.join('\r\n'));
   }
 
+  function deleteFranchise(teamId) {
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) {
+      window.AuctionApp.showToast('Franchise not found', 'error');
+      return;
+    }
+
+    const playerCount = team.players ? team.players.length : 0;
+    const confirmMsg = playerCount > 0
+      ? `Are you sure you want to delete the franchise "${team.name}"?\n\n⚠️ ${playerCount} signed player(s) on this roster will be released back into the available auction pool.`
+      : `Are you sure you want to delete the franchise "${team.name}"?`;
+
+    if (confirm(confirmMsg)) {
+      const res = window.AuctionState.deleteTeam(teamId);
+      if (res && res.success) {
+        if (window.AuctionSound && window.AuctionSound.playGavel) {
+          window.AuctionSound.playGavel();
+        }
+        window.AuctionApp.showToast(`Franchise "${team.name}" deleted successfully!`, 'success');
+        renderAll();
+      } else {
+        window.AuctionApp.showToast('Failed to delete franchise', 'error');
+      }
+    }
+  }
+
+  function changePassword(teamId) {
+    const team = window.AuctionState.getTeam(teamId);
+    if (!team) return;
+
+    const currentPass = team.password || '';
+    const newPass = prompt(`Change login password for ${team.name} (Captain: ${team.captain}):\nCurrent password: "${currentPass}"\n\nEnter new password:`, currentPass);
+    if (newPass !== null) {
+      const trimmed = newPass.trim();
+      if (!trimmed || trimmed.length < 3) {
+        window.AuctionApp.showToast('Password must be at least 3 characters long', 'error');
+        return;
+      }
+      const res = window.AuctionState.updateTeamPassword(teamId, trimmed);
+      if (res && res.success) {
+        if (window.AuctionSound && window.AuctionSound.playBid) window.AuctionSound.playBid();
+        window.AuctionApp.showToast(`Password updated for ${team.name}! New password: "${trimmed}"`, 'success');
+        renderAll();
+      } else {
+        window.AuctionApp.showToast(res.reason || 'Failed to update password', 'error');
+      }
+    }
+  }
+
   return {
     renderAll,
+    deleteFranchise,
+    changePassword,
     exportAllTeamsCSV,
     exportSingleTeamCSV,
     exportSoldPlayersCSV

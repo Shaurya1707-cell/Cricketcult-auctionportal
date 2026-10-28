@@ -521,6 +521,78 @@
               </form>
             </div>
 
+            <!-- Franchise Password & Security Management -->
+            <div class="card-panel" style="margin-bottom: 24px;">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3>🔐 Franchise Passwords & Security</h3>
+                  <p class="card-subtitle">Change and manage confidential franchise captain passwords</p>
+                </div>
+                <span class="badge badge-rose">PASSWORDS</span>
+              </div>
+
+              <form id="adminPasswordForm">
+                <div class="form-group">
+                  <label class="form-label">Target Franchise</label>
+                  <select id="passwordTargetTeam" class="form-select" required></select>
+                </div>
+
+                <div id="passwordCurrentInfo" class="admin-action-banner" style="margin-bottom: 16px; padding: 12px 14px; font-size: 13px;">
+                  <!-- Dynamically populated info banner -->
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <div style="position: relative;">
+                      <input 
+                        type="text" 
+                        id="newPasswordInput" 
+                        class="form-input" 
+                        required 
+                        placeholder="e.g. kkr@2024"
+                        style="padding-right: 75px;"
+                      >
+                      <button 
+                        type="button" 
+                        id="btnGeneratePassword" 
+                        class="btn btn-secondary btn-sm"
+                        style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); padding: 5px 8px; font-size: 11px;"
+                        title="Auto-generate memorable password"
+                      >
+                        🎲 Auto
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary" style="height: 44px; margin-top: auto;">
+                      🔑 Update Franchise Password
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              <!-- Live Credentials Directory List -->
+              <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                  <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+                    All Franchise Credentials Directory
+                  </span>
+                  <button 
+                    type="button" 
+                    id="btnToggleAllPasswords" 
+                    class="btn btn-secondary btn-sm"
+                    style="padding: 4px 10px; font-size: 11px;"
+                  >
+                    👁️ Reveal All Passwords
+                  </button>
+                </div>
+                <div id="adminPasswordList" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Dynamically rendered rows -->
+                </div>
+              </div>
+            </div>
+
             <!-- Squad Size & Roster Capacity Management -->
             <div class="card-panel" style="margin-bottom: 24px;">
               <div class="card-header">
@@ -657,6 +729,21 @@
                 <button id="btnClearAllPlayers" class="btn btn-danger" style="width: 100%; background: rgba(244, 63, 94, 0.2); border-color: rgba(244, 63, 94, 0.5);">
                   🗑️ Clear All Players (Wipe Player Pool)
                 </button>
+
+                <div style="padding: 12px; background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: var(--radius-md);">
+                  <div style="font-size: 12px; font-weight: 700; color: #fda4af; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>🗑️ Delete One Franchise</span>
+                    <span style="font-size: 11px; font-weight: 400; color: var(--text-muted);">Remove team individually</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <select id="deleteSingleTeamSelect" class="form-select" style="flex: 1; font-size: 13px; padding: 7px 10px;">
+                      <option value="" disabled selected>Select a franchise to delete...</option>
+                    </select>
+                    <button type="button" id="btnDeleteSingleTeam" class="btn btn-danger btn-sm" style="white-space: nowrap;">
+                      Delete Franchise
+                    </button>
+                  </div>
+                </div>
 
                 <button id="btnClearAllTeams" class="btn btn-danger" style="width: 100%; background: rgba(244, 63, 94, 0.2); border-color: rgba(244, 63, 94, 0.5);">
                   🗑️ Clear All Franchises (Wipe Team Names)

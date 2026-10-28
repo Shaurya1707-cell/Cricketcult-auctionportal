@@ -484,6 +484,14 @@ window.AuctionSync = (function () {
         window.AuctionLive.startTimer();
       }
       window.AuctionApp.showToast('Bidding Resumed', 'success');
+    } else if (action === 'TEAM_DELETED') {
+      if (payload && payload.teamName) {
+        window.AuctionApp.showToast(`Franchise "${payload.teamName}" removed by admin`, 'info');
+      }
+    } else if (action === 'PASSWORD_UPDATED') {
+      if (payload && payload.teamName) {
+        window.AuctionApp.showToast(`🔐 Credentials updated for ${payload.teamName}`, 'info');
+      }
     }
   }
 
